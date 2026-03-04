@@ -1,3 +1,9 @@
 /data
 /Janus
 /checkpoints
+/dataset/*
+/raw_images/*
+/filtered_images/*
+/Project/dataset/
+/Project/raw_images/
+/Project/filtered_images/
