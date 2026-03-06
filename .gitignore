@@ -7,3 +7,7 @@
 /Project/dataset/
 /Project/raw_images/
 /Project/filtered_images/
+/Project/filtered_images_v0/
+/Project/filtered_images_stylegan_128/
+/Project/stylegan3/
+/Project/stylegan3_training_chairs/
