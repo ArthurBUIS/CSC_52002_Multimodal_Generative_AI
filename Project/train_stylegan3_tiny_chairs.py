@@ -112,6 +112,7 @@ print(f"✅ Fichiers patchés: {patched_files}/{len(patches)}")
 print("\n📦 Imports...")
 import dnnlib
 from training import training_loop
+import legacy
 
 if torch.cuda.is_available():
     props = torch.cuda.get_device_properties(0)
@@ -216,18 +217,30 @@ snapshots = sorted(
     ]
 )
 
-if snapshots:
-    latest_snapshot = snapshots[-1]
-    resume_path = os.path.join(c.run_dir, latest_snapshot)
-    try:
-        # network-snapshot-001200.pkl -> 1200 kimg
-        resume_kimg = int(latest_snapshot.split('-')[-1].split('.')[0])
-    except ValueError:
-        resume_kimg = 0
+resume_path = None
+resume_kimg = 0
 
+for snapshot in reversed(snapshots):
+    candidate_path = os.path.join(c.run_dir, snapshot)
+    try:
+        with open(candidate_path, 'rb') as f:
+            legacy.load_network_pkl(f)
+        resume_path = candidate_path
+        try:
+            # network-snapshot-001200.pkl -> 1200 kimg
+            resume_kimg = int(snapshot.split('-')[-1].split('.')[0])
+        except ValueError:
+            resume_kimg = 0
+        break
+    except Exception as err:
+        print(f"⚠️  Snapshot ignoré (corrompu/invalide): {snapshot} ({type(err).__name__})")
+
+if resume_path is not None:
     print(f"🔄 Reprise depuis {resume_path}")
     c.resume_pkl = resume_path
     c.resume_kimg = resume_kimg
+elif snapshots:
+    print("⚠️  Snapshots trouvés mais tous invalides, entraînement from scratch")
 else:
     print("⚠️  Pas de checkpoint trouvé, entraînement from scratch")
 
